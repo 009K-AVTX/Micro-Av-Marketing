@@ -13,7 +13,6 @@ const useAccess = () => useContext(AccessCtx);
 // "Chat with us" buttons call openAccess(topic, 'chat'): the same modal, asking for a message instead.
 
 const usd = n => `$${Math.round(n).toLocaleString()}`;
-const cents = n => `$${n.toFixed(2)}`;
 
 export default function App() {
   const [access, setAccess] = useState(null); // null = closed, otherwise { interest, mode }
@@ -83,16 +82,16 @@ function Hero() {
     <section className="hero-site" id="top">
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <span className="section-title">Call forwarding & routing · for teams that can’t miss a call</span>
-          <h1>Every call, to the right person<span className="accent">.</span></h1>
-          <p className="lede">MicroAV gives you local and toll-free numbers that ring wherever your team is — with rules for hours, areas and menus, failover when nobody picks up, and a live view of every call.</p>
+          <span className="section-title">Call forwarding panel · numbers, rules & live traffic</span>
+          <h1>Route Every Call. Anywhere<span className="accent">.</span></h1>
+          <p className="lede">Get local and toll-free numbers, decide where each call goes by time, area code or keypad choice, line up backups for busy moments, and watch it all happen live — from one simple panel.</p>
           <div className="hero-actions">
             <button type="button" className="btn btn-primary btn-lg" onClick={() => openAccess('', 'chat')}>Chat with us →</button>
-            <button type="button" className="btn btn-lg" onClick={() => openAccess('Guided walkthrough')}>Get a walkthrough</button>
+            <button type="button" className="btn btn-lg" onClick={() => openAccess('Panel tour')}>Book a Tour</button>
           </div>
-          <a className="text-link" href="#journey">Or see how a call moves in 60 seconds ↓</a>
+          <a className="text-link" href="#journey">Follow one call through MicroAV ↓</a>
           <ul className="assurances">
-            <li>{cents(RATES.perMinute)} a minute</li><li>No contract</li><li>Any phone or SIP line</li>
+            <li>Avg {usd(RATES.perCall)} per call</li><li>Prepaid, no lock-in</li><li>Phones and SIP lines</li>
           </ul>
         </div>
         <LivePreview />
@@ -140,12 +139,12 @@ function LivePreview() {
     <div className="preview card" aria-label="Example MicroAV live monitor">
       <div className="preview-bar">
         <span /><span /><span />
-        <em>MicroAV · live monitor</em>
+        <em>MicroAV · Live Monitor</em>
       </div>
       <div className="preview-stats">
-        <div><span className="stat-label">Live now</span><div className="stat-value">{live}</div></div>
+        <div><span className="stat-label">On the line</span><div className="stat-value">{live}</div></div>
         <div><span className="stat-label">Calls today</span><div className="stat-value">{214 + tick}</div></div>
-        <div><span className="stat-label">Answered</span><div className="stat-value">96<small>%</small></div></div>
+        <div><span className="stat-label">Answer rate</span><div className="stat-value">96<small>%</small></div></div>
       </div>
       <table>
         <thead><tr><th>Caller</th><th className="hide-sm">Dialed</th><th>Route</th><th>Status</th></tr></thead>
@@ -181,9 +180,9 @@ function Journey() {
   return (
     <section className="wrap journey" id="journey">
       <div className="journey-intro">
-        <span className="section-title">How it works</span>
-        <h2>From ring to right person in under a second.</h2>
-        <p className="lede">Every call to a MicroAV number runs the same five steps, and you control each one from a single panel.</p>
+        <span className="section-title">The call path</span>
+        <h2>Five Steps, Usually Under a Second.</h2>
+        <p className="lede">Each call to a MicroAV number goes through the same sequence. You set every step from the panel.</p>
       </div>
       <ol className="journey-track">
         {JOURNEY.map(([t, d], i) => (
@@ -207,7 +206,7 @@ function Question({ q, flip, Visual }) {
       <div className="wrap">
         <div className={`question-head${flip ? ' flip' : ''}`}>
           <div>
-            <span className="section-title">{q.n} · The question behind every call</span>
+            <span className="section-title">{q.n} · Handled on every call</span>
             <h2>{q.ask}</h2>
             <p className="lede">{q.answer}</p>
             <ul className="points">
@@ -217,7 +216,7 @@ function Question({ q, flip, Visual }) {
             </ul>
             <div className="inline-cta">
               <button type="button" className="btn btn-primary" onClick={() => openAccess(q.ask, 'chat')}>Chat with us</button>
-              <button type="button" className="btn btn-ghost" onClick={() => openAccess(q.ask)}>Ask us how →</button>
+              <button type="button" className="btn btn-ghost" onClick={() => openAccess(q.ask)}>See it in the panel →</button>
             </div>
           </div>
           <div className="question-side">
@@ -252,7 +251,7 @@ function RouteVisual() {
           <span className="plan-to">→ {to}</span>
         </div>
       ))}
-      <p className="muted small">Checked top to bottom. The first path that matches takes the call.</p>
+      <p className="muted small">Paths are checked top to bottom. The first match with a free destination takes the call.</p>
     </div>
   );
 }
@@ -265,7 +264,7 @@ function FailoverVisual() {
   ];
   return (
     <div className="chain">
-      <span className="stat-label">One call, three tries · priority order</span>
+      <span className="stat-label">One call, three destinations · in order</span>
       {steps.map(([name, target, result, kind], i) => (
         <div className={`chain-step ${kind}`} key={name}>
           <span className="chain-n">{i + 1}</span>
@@ -289,7 +288,7 @@ function InsightVisual() {
           <strong>{v}</strong>
         </div>
       ))}
-      <p className="muted small">The red bar is the one to fix first.</p>
+      <p className="muted small">Red marks the destination losing the most calls.</p>
     </div>
   );
 }
@@ -302,50 +301,52 @@ function Calculator() {
   const openAccess = useAccess();
   const [calls, setCalls] = useState(400);
   const [missed, setMissed] = useState(20);
-  const [minutes, setMinutes] = useState(4);
   const [value, setValue] = useState(450);
   const [closeRate, setCloseRate] = useState(30);
 
   const missedCalls = calls * (missed / 100);
   const atRisk = missedCalls * (closeRate / 100) * value;
-  const forwardCost = calls * minutes * RATES.perMinute + RATES.numbers[0][1];
+  const callWorth = (closeRate / 100) * value;
+  const returnPerDollar = callWorth / RATES.perCall;
 
   const field = (label, val, set, opts) => (
     <label className="calc-field">
       <span className="calc-label">{label}<b>{opts.fmt(val)}</b></span>
-      <input type="range" min={opts.min} max={opts.max} step={opts.step} value={val} onChange={e => set(Number(e.target.value))} />
+      <input type="range" min={opts.min} max={opts.max} step={opts.step} value={val} onChange={e => set(Number(e.target.value))}
+        style={{ '--fill': `${((val - opts.min) / (opts.max - opts.min)) * 100}%` }} />
     </label>
   );
+  const lostSales = missedCalls * closeRate / 100;
 
   return (
     <section className="band calc-band" id="calculator">
       <div className="wrap">
         <div className="section-head">
-          <span className="section-title">Run your own numbers</span>
-          <h2>What are missed calls costing you?</h2>
-          <p className="lede">Every call that rings out is a customer who probably called the next business on the list. Drag the sliders to see what that adds up to — and what it costs to forward every call instead.</p>
+          <span className="section-title">Missed-call estimate</span>
+          <h2>Price Out Your Unanswered Calls.</h2>
+          <p className="lede">A call nobody answers rarely calls back. Move the sliders to put a monthly figure on those lost calls, and see what one answered call is worth next to MicroAV’s average price per call.</p>
         </div>
         <div className="calc">
-          <div className="calc-inputs">
+          <div className="calc-inputs card">
+            <span className="stat-label">Your numbers</span>
             {field('Calls per month', calls, setCalls, { min: 20, max: 5000, step: 20, fmt: v => v.toLocaleString() })}
-            {field('Share that go unanswered', missed, setMissed, { min: 0, max: 60, step: 5, fmt: v => `${v}%` })}
-            {field('Average call length', minutes, setMinutes, { min: 1, max: 20, step: 1, fmt: v => `${v} min` })}
-            {field('Value of a won customer', value, setValue, { min: 50, max: 10000, step: 50, fmt: usd })}
-            {field('Calls that become customers', closeRate, setCloseRate, { min: 5, max: 80, step: 5, fmt: v => `${v}%` })}
+            {field('Calls nobody answers', missed, setMissed, { min: 0, max: 60, step: 5, fmt: v => `${v}%` })}
+            {field('Average sale per customer', value, setValue, { min: 50, max: 10000, step: 50, fmt: usd })}
+            {field('Answered calls that buy', closeRate, setCloseRate, { min: 5, max: 80, step: 5, fmt: v => `${v}%` })}
           </div>
           <div className="calc-out card">
             <div className="calc-compare">
-              <div><span className="stat-label">Walking away each month</span><div className="stat-value accent">{usd(atRisk)}</div></div>
-              <div><span className="stat-label">Forwarding every call</span><div className="stat-value">{usd(forwardCost)}</div></div>
+              <div><span className="stat-label">Lost each month</span><div className="stat-value accent">{usd(atRisk)}</div></div>
+              <div><span className="stat-label">One answered call is worth</span><div className="stat-value">{usd(callWorth)}</div></div>
             </div>
             <div className="calc-rows">
-              <div><span>Missed calls a month</span><strong>{Math.round(missedCalls)}</strong></div>
-              <div><span>Customers lost with them</span><strong>{Math.round(missedCalls * closeRate / 100)}</strong></div>
-              <div><span>Forwarded minutes</span><strong>{(calls * minutes).toLocaleString()} × {cents(RATES.perMinute)}</strong></div>
-              <div><span>Plus one local number</span><strong>{cents(RATES.numbers[0][1])}/mo</strong></div>
+              <div><span>Unanswered calls</span><strong>{Math.round(missedCalls)}</strong></div>
+              <div><span>Sales that went elsewhere</span><strong>{lostSales < 10 ? lostSales.toFixed(1) : Math.round(lostSales)}</strong></div>
+              <div><span>MicroAV average per call</span><strong>{usd(RATES.perCall)}</strong></div>
+              <div><span>Back for every $1 spent</span><strong>${returnPerDollar.toFixed(2)}</strong></div>
             </div>
-            <p className="muted small">Forwarding cost uses MicroAV’s standard per-minute rate. Failover won’t catch every call, but every one it catches counts.</p>
-            <button type="button" className="btn btn-primary btn-block" onClick={() => openAccess(`Calculator: ${calls} calls/mo, ${missed}% missed`, 'chat')}>Plan my routing with us →</button>
+            <p className="muted small">Worked out at the {usd(RATES.perCall)} average per connected call. Your own rate is set in a short chat with the MicroAV team.</p>
+            <button type="button" className="btn btn-primary btn-block" onClick={() => openAccess(`My per-call price (${calls} calls/mo, ${missed}% unanswered)`, 'chat')}>Chat for Your Price →</button>
           </div>
         </div>
       </div>
@@ -389,9 +390,9 @@ function Connects() {
     <section className="wrap section" id="connects">
       <div className="split">
         <div>
-          <span className="section-title">Rings anywhere</span>
-          <h2>If it can take a call, MicroAV can reach it.</h2>
-          <p className="lede">Send calls to mobiles, desk phones, an answering service or straight into your VoIP system over SIP. Pull the results out again by CSV or API.</p>
+          <span className="section-title">Destinations</span>
+          <h2>Forward to Any Phone You Already Use.</h2>
+          <p className="lede">Mobiles, office handsets, a night service or your VoIP system over SIP — all work as destinations. Call data comes back out by CSV or API.</p>
           <ol className="setup">
             {SETUP.map(([t, d], i) => (
               <li key={t}><span className="step-n">{i + 1}</span><div><strong>{t}</strong><p>{d}</p></div></li>
@@ -410,8 +411,8 @@ function Trust() {
   return (
     <section className="wrap section trust" id="trust">
       <div className="section-head">
-        <span className="section-title">Protection & control</span>
-        <h2>Your phone line is your front door. Keep it tidy.</h2>
+        <span className="section-title">Safeguards</span>
+        <h2>Stay in Control of Who Gets Through.</h2>
       </div>
       <div className="trust-grid">
         {TRUST.map(([t, d]) => (
@@ -432,16 +433,16 @@ function Pricing() {
   const openAccess = useAccess();
   const cards = [
     {
-      name: 'Phone numbers', price: cents(RATES.numbers[0][1]), unit: '/mo per local number', pitch: 'Rent as many as you need, cancel any time.',
-      list: RATES.numbers.map(([k, v]) => `${k} — ${cents(v)}/mo`).concat('Mobile numbers available'),
+      name: 'Included', price: '$0', unit: '/mo', pitch: 'Numbers and the full panel come with every account.',
+      list: ['Local and toll-free numbers', 'Routing plans, IVR menus & backup order', 'Live monitor, reports, CSV', 'API key'],
     },
     {
-      name: 'Forwarded minutes', price: cents(RATES.perMinute), unit: '/min', pitch: 'Only pay for calls that connect.', featured: true,
-      list: [`Prepaid balance, top up from $${RATES.minTopUp}`, 'Deducted per minute as you go', 'Low-balance alerts you set', 'No contract, no minimums'],
+      name: 'Per Connected Call', price: usd(RATES.perCall), unit: ' avg / call', pitch: 'One price per call — no minutes to count.', featured: true,
+      list: ['Charged only when a call connects', 'Blocked callers are never billed', `Prepaid, top up from $${RATES.minTopUp}`, 'Your own low-balance warning'],
     },
     {
-      name: 'The platform', price: '$0', unit: '/mo', pitch: 'Every feature on every account.',
-      list: ['Unlimited routing plans & rules', 'IVR menus & failover', 'Live monitor, reports, CSV', 'API access'],
+      name: 'Your Rate', price: 'Fixed', unit: ' up front', pitch: 'Your exact per-call price is agreed before you go live.',
+      list: ['Industry and call type', 'Monthly call volume', 'Number type and country', 'How many paths and menus you run'],
     },
   ];
   return (
@@ -450,28 +451,28 @@ function Pricing() {
         <div className="pricing-head">
           <div>
             <span className="section-title">Pricing</span>
-            <h2>Pay for numbers and minutes. That’s it.</h2>
+            <h2>One Price per Call, Averaging $35.</h2>
           </div>
-          <p className="muted pricing-note">No seats, no tiers, no setup fee. Every account gets every feature.</p>
+          <p className="muted pricing-note">No per-minute meter, no per-user fees and no plan levels.</p>
         </div>
         <div className="plans">
           {cards.map(c => (
             <article key={c.name} className={`plan${c.featured ? ' hot' : ''}`}>
-              {c.featured && <span className="badge plan-flag">Only pay for use</span>}
+              {c.featured && <span className="badge plan-flag">Most accounts</span>}
               <h3>{c.name}</h3>
               <p className="muted">{c.pitch}</p>
               <div className="price">{c.price}<small>{c.unit}</small></div>
-              <button type="button" className={`btn btn-block${c.featured ? ' btn-primary' : ''}`} onClick={() => openAccess(`Pricing: ${c.name}`, 'chat')}>Chat with us</button>
+              <button type="button" className={`btn btn-block${c.featured ? ' btn-primary' : ''}`} onClick={() => openAccess('My per-call price', 'chat')}>Chat for Your Price</button>
               <ul>{c.list.map(f => <li key={f}>{f}</li>)}</ul>
             </article>
           ))}
         </div>
         <div className="partner">
           <div>
-            <span className="stat-label">High volume or reselling?</span>
-            <h3>Volume minute rates and reseller accounts for agencies and call networks.</h3>
+            <span className="stat-label">Lots of calls, or reselling?</span>
+            <h3>Lower Per-Call Rates at Volume, and Reseller Accounts for Agencies.</h3>
           </div>
-          <button type="button" className="btn" onClick={() => openAccess('Volume / reseller pricing')}>Get a volume quote</button>
+          <button type="button" className="btn" onClick={() => openAccess('Volume or reseller rates')}>Ask About Volume Rates</button>
         </div>
       </div>
     </section>
@@ -484,8 +485,8 @@ function Faq() {
   return (
     <section className="wrap section faq" id="faq">
       <div>
-        <span className="section-title">FAQ</span>
-        <h2>Fair questions.</h2>
+        <span className="section-title">Help</span>
+        <h2>Common Questions, Plain Answers.</h2>
       </div>
       <div className="faq-list">
         {FAQS.map(([q, a]) => (
@@ -506,9 +507,9 @@ function Closing() {
       <div className="hero cta">
         <div className="hero-inner">
           <div>
-            <span className="hero-eyebrow">Your phone is ringing somewhere</span>
-            <h2>Make sure someone<br />picks it up<span className="accent">.</span></h2>
-            <p>Numbers from {cents(RATES.numbers[0][1])} a month, minutes at {cents(RATES.perMinute)}, and a real person to help you set up your first routing plan.</p>
+            <span className="hero-eyebrow">Ready when you are</span>
+            <h2>Never Let a<br />Call Ring Out<span className="accent">.</span></h2>
+            <p>Priced per connected call, averaging {usd(RATES.perCall)}, with numbers included. We’ll help you build your first routing plan.</p>
           </div>
           <div className="hero-actions">
             <button type="button" className="btn btn-primary btn-lg" onClick={() => openAccess('', 'chat')}>Chat with us →</button>
@@ -527,7 +528,7 @@ function Footer() {
       <div className="wrap footer-grid">
         <div className="footer-brand">
           <Logo size={28} />
-          <p className="muted">Call forwarding and routing that gets every call to the right person.</p>
+          <p className="muted">Numbers, rules, menus and live traffic in one forwarding panel.</p>
         </div>
         {FOOTER.map(([title, links]) => (
           <div key={title}>
@@ -627,16 +628,16 @@ function AccessModal({ interest, mode = 'access', onClose }) {
             <span className="section-title">{state === 'sent' ? (chat ? 'Message received' : 'Request received') : 'Almost there'}</span>
             <h2 id="access-title">Thanks{first ? `, ${first}` : ''}<span className="accent">.</span></h2>
             {state === 'sent'
-              ? <p className="lede">{chat ? 'A real person will reply by email, usually within a few working hours.' : 'We’ll be in touch within one working day to set up your access.'}</p>
-              : <p className="lede">Your email app should have opened with your details filled in — just press send. If it didn’t, email <a href={mailto()}>hello@microav.com</a>.</p>}
+              ? <p className="lede">{chat ? 'Someone from the MicroAV team will email you back, normally the same working day.' : 'We’ll email you within one working day with your login.'}</p>
+              : <p className="lede">Your email app should now be open with the details filled in. Hit send to finish. If it didn’t, email <a href={mailto()}>hello@microav.com</a>.</p>}
             <button type="button" className="btn" onClick={onClose}>Back to the site</button>
           </div>
         ) : (
           chat ? (
           <form onSubmit={submit}>
             <span className="section-title">Chat with us</span>
-            <h2 id="access-title">Ask us anything.</h2>
-            <p className="muted">Pricing, setup, whether MicroAV fits your business — send a message and a real person will get back to you.</p>
+            <h2 id="access-title">Send Us a Message.</h2>
+            <p className="muted">Rates, setup or whether MicroAV suits your calls — write to us and the team will reply.</p>
             <div className="form-grid">
               <label>Your name<input ref={firstInput} required value={form.name} onChange={set('name')} autoComplete="name" /></label>
               <label>Email<input type="email" required value={form.email} onChange={set('email')} autoComplete="email" /></label>
@@ -646,7 +647,7 @@ function AccessModal({ interest, mode = 'access', onClose }) {
               </label>
             </div>
             {state === 'error' && (
-              <p className="form-error" role="alert">That didn’t go through. Try again, or <a href={mailto()}>email us instead</a>.</p>
+              <p className="form-error" role="alert">Sending failed. Try once more, or <a href={mailto()}>email us directly</a>.</p>
             )}
             <button className="btn btn-primary btn-block" type="submit" disabled={state === 'sending'}>
               {state === 'sending' ? 'Sending…' : 'Send message →'}
@@ -655,8 +656,8 @@ function AccessModal({ interest, mode = 'access', onClose }) {
           ) : (
           <form onSubmit={submit}>
             <span className="section-title">Request access</span>
-            <h2 id="access-title">Let’s get you set up.</h2>
-            <p className="muted">Tell us a little about you and we’ll set up your account, numbers and first routing plan.</p>
+            <h2 id="access-title">Open Your MicroAV Account.</h2>
+            <p className="muted">A few details and we’ll prepare your panel, numbers and a starter routing plan.</p>
             <div className="form-grid">
               <label>Your name<input ref={firstInput} required value={form.name} onChange={set('name')} autoComplete="name" /></label>
               <label>Work email<input type="email" required value={form.email} onChange={set('email')} autoComplete="email" /></label>
@@ -679,12 +680,12 @@ function AccessModal({ interest, mode = 'access', onClose }) {
               </label>
             </div>
             {state === 'error' && (
-              <p className="form-error" role="alert">That didn’t go through. Try again, or <a href={mailto()}>email us instead</a>.</p>
+              <p className="form-error" role="alert">Sending failed. Try once more, or <a href={mailto()}>email us directly</a>.</p>
             )}
             <button className="btn btn-primary btn-block" type="submit" disabled={state === 'sending'}>
               {state === 'sending' ? 'Sending…' : 'Request access →'}
             </button>
-            <p className="muted small">We’ll only use this to set up your account.</p>
+            <p className="muted small">Used only to create your account.</p>
           </form>
           )
         )}
