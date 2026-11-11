@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Logo from './components/Logo';
 import { CONNECTS, FAQS, FOOTER, JOURNEY, NAV, QUESTIONS, RATES, SETUP, TICKER, TRUST, VIEWS } from './content';
+import { CALLERS, PICKUP, PLAN, TIMES, routeCall } from './routing';
 
 const CONTACT = 'mailto:hello@microav.com';
 
@@ -12,7 +13,6 @@ const AccessCtx = createContext(() => {});
 const useAccess = () => useContext(AccessCtx);
 // "Chat with us" buttons call openAccess(topic, 'chat'): the same modal, asking for a message instead.
 
-const usd = n => `$${Math.round(n).toLocaleString()}`;
 
 export default function App() {
   const [access, setAccess] = useState(null); // null = closed, otherwise { interest, mode }
@@ -25,7 +25,7 @@ export default function App() {
         <Ticker />
         <Journey />
         {QUESTIONS.map((q, i) => <Question key={q.id} q={q} flip={i % 2 === 1} Visual={VISUALS[q.id]} />)}
-        <Calculator />
+        <TestCall />
         <Views />
         <Connects />
         <Trust />
@@ -94,7 +94,7 @@ function Hero() {
             <li>Local &amp; toll-free numbers</li><li>Prepaid, no lock-in</li><li>Phones and SIP lines</li>
           </ul>
         </div>
-        <LivePreview />
+        <CallFlow />
       </div>
       <span className="hero-word" aria-hidden="true">Forward</span>
     </section>
@@ -102,63 +102,78 @@ function Hero() {
 }
 
 // [caller, dialed, route, status]
-const SEED_CALLS = [
-  ['+1 (212) 555-0183', 'Sales line', 'Area code 2xx → Sales desk', 'Connected'],
-  ['+1 (646) 555-0129', 'Main toll-free', 'IVR · pressed 2 → Support', 'Connected'],
-  ['+1 (305) 555-0162', 'Miami office', 'Round robin → Rep 3', 'Ringing'],
-  ['+1 (202) 555-0147', 'Sales line', 'Block list · robocaller', 'Blocked'],
-  ['+1 (415) 555-0105', 'Sales line', 'No answer → Overflow', 'Failover'],
+// Sample calls the hero cycles through: [caller, time, first desk].
+const HERO_CALLS = [
+  ['ny', 'office', 'answers'],
+  ['chi', 'office', 'busy'],
+  ['chi', 'evening', 'answers'],
+  ['spam', 'office', 'answers'],
+  ['ny', 'weekend', 'noanswer'],
+  ['chi', 'office', 'answers'],
 ];
-const INCOMING = [
-  ['+1 (718) 555-0174', 'Sales line', 'Office hours → Sales desk', 'Ringing'],
-  ['+1 (312) 555-0191', 'Main toll-free', 'IVR · pressed 1 → Sales', 'Connected'],
-  ['+1 (213) 555-0138', 'Sales line', 'Busy → Sales overflow', 'Failover'],
-  ['+1 (786) 555-0110', 'Miami office', 'Round robin → Rep 1', 'Connected'],
-];
-const STATUS_BADGE = { Connected: 'badge-green', Ringing: 'badge-blue', Failover: 'badge-amber', Blocked: 'badge-red' };
+const RESULT_BADGE = { Connected: 'badge-green', 'Rolled over': 'badge-amber', Blocked: 'badge-red' };
 
-function LivePreview() {
-  const [calls, setCalls] = useState(SEED_CALLS);
-  const [tick, setTick] = useState(0);
+function CallFlow() {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
-    const id = setInterval(() => {
-      setTick(t => {
-        const next = t + 1;
-        setCalls(cs => [INCOMING[next % INCOMING.length], ...cs].slice(0, 5));
-        return next;
-      });
-    }, 3200);
+    if (paused || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const id = setInterval(() => setI(n => (n + 1) % HERO_CALLS.length), 3600);
     return () => clearInterval(id);
-  }, []);
+  }, [paused]);
 
-  const live = calls.filter(c => c[3] === 'Connected' || c[3] === 'Ringing').length;
+  const [c, t, p] = HERO_CALLS[i];
+  const caller = CALLERS[c];
+  const { steps, paths, result } = routeCall(c, t, p);
+  const pathNote = j => steps.find(s => s.title.startsWith(`Path ${j + 1} `))?.detail;
 
   return (
-    <div className="preview card" aria-label="Example MicroAV live monitor">
+    <div className="preview card flow" aria-label="Example of MicroAV routing a call"
+      onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <div className="preview-bar">
         <span /><span /><span />
-        <em>MicroAV · Live Monitor</em>
+        <em>MicroAV · Sales — smart routing</em>
+        <span className="flow-live"><i />Live</span>
       </div>
-      <div className="preview-stats">
-        <div><span className="stat-label">On the line</span><div className="stat-value">{live}</div></div>
-        <div><span className="stat-label">Calls today</span><div className="stat-value">{214 + tick}</div></div>
-        <div><span className="stat-label">Answer rate</span><div className="stat-value">96<small>%</small></div></div>
-      </div>
-      <table>
-        <thead><tr><th>Caller</th><th className="hide-sm">Dialed</th><th>Route</th><th>Status</th></tr></thead>
-        <tbody>
-          {calls.map((c, i) => (
-            <tr key={`${tick}-${i}`} className={i === 0 && tick > 0 ? 'row-new' : ''}>
-              <td>{c[0]}</td>
-              <td className="hide-sm muted">{c[1]}</td>
-              <td className="muted route-cell">{c[2]}</td>
-              <td><span className={`badge ${STATUS_BADGE[c[3]]}`}>{c[3]}</span></td>
-            </tr>
+
+      <div className="flow-body" key={i}>
+        <div className="flow-caller">
+          <span className="stat-label">Incoming call</span>
+          <div className="flow-caller-row">
+            <strong>{caller.number}</strong>
+            <span className="muted small">{caller.label} · {TIMES[t].label}</span>
+          </div>
+        </div>
+
+        <div className={`flow-gate${caller.blocked ? ' is-stop' : ''}`}>
+          <span>Block list</span>
+          <span>{caller.blocked ? 'Blocked' : 'Clear'}</span>
+        </div>
+
+        <ol className="flow-paths">
+          {PLAN.map((path, j) => (
+            <li key={path.name} className={`is-${paths[j]}`} style={{ '--d': `${0.25 + j * 0.25}s` }}>
+              <span className="plan-n">{j + 1}</span>
+              <span><strong>{path.name}</strong><small>{paths[j] === 'idle' ? path.when : pathNote(j)}</small></span>
+              <span className="flow-to">→ {path.chain.join(' → ')}</span>
+            </li>
           ))}
-        </tbody>
-      </table>
+        </ol>
+
+        <div className="flow-result">
+          <span className={`badge ${RESULT_BADGE[result.status]}`}>{result.status}</span>
+          <strong>{result.to}</strong>
+          {result.status === 'Rolled over' && <span className="muted small">first desk: {PICKUP[p].reason.toLowerCase()}</span>}
+        </div>
+      </div>
+
+      <div className="flow-dots" role="tablist" aria-label="Sample calls">
+        {HERO_CALLS.map((_, j) => (
+          <button key={j} type="button" role="tab" aria-selected={j === i} aria-label={`Sample call ${j + 1}`}
+            onClick={() => { setI(j); setPaused(true); }} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -235,23 +250,21 @@ function Question({ q, flip, Visual }) {
   );
 }
 
-function RouteVisual() {
-  const paths = [
-    ['1', 'Area code 2xx', 'Any time', 'New York desk'],
-    ['2', 'Office hours', 'Mon–Fri 09:00–18:00', 'Sales desk → Overflow'],
-    ['3', 'Everything else', 'Any time', 'After-hours answering'],
-  ];
+function IvrVisual() {
+  const keys = [['1', 'Sales', 'Sales desk'], ['2', 'Support', 'Support PBX'], ['3', 'Billing', 'Billing team'], ['0', 'Anything else', 'Front desk']];
   return (
-    <div className="plan-paths">
-      <span className="stat-label">Routing plan · Sales — smart routing <span className="badge badge-green">Live</span></span>
-      {paths.map(([n, name, when, to]) => (
-        <div className="plan-path" key={n}>
-          <span className="plan-n">{n}</span>
-          <span><strong>{name}</strong><small>{when}</small></span>
-          <span className="plan-to">→ {to}</span>
-        </div>
-      ))}
-      <p className="muted small">Paths are checked top to bottom. The first match with a free destination takes the call.</p>
+    <div className="ivr">
+      <span className="stat-label">IVR menu · Main menu</span>
+      <p className="ivr-greeting">“Thanks for calling. Press 1 for sales, 2 for support, 3 for billing, or 0 for the front desk.”</p>
+      <div className="ivr-keys">
+        {keys.map(([k, label, to]) => (
+          <div key={k}>
+            <span className="ivr-key">{k}</span>
+            <span><strong>{label}</strong><small>→ {to}</small></span>
+          </div>
+        ))}
+      </div>
+      <p className="muted small">No key pressed in 8 seconds → Front desk.</p>
     </div>
   );
 }
@@ -293,59 +306,64 @@ function InsightVisual() {
   );
 }
 
-const VISUALS = { route: RouteVisual, failover: FailoverVisual, insight: InsightVisual };
+const VISUALS = { route: IvrVisual, failover: FailoverVisual, insight: InsightVisual };
 
-/* ---------------- Missed-call calculator ---------------- */
+/* ---------------- Test-call simulator ---------------- */
 
-function Calculator() {
+const STEP_ICON = { pass: '✓', stop: '✕', skip: '–', match: '●', fail: '!', ok: '✓' };
+
+function TestCall() {
   const openAccess = useAccess();
-  const [calls, setCalls] = useState(400);
-  const [missed, setMissed] = useState(20);
-  const [value, setValue] = useState(450);
-  const [closeRate, setCloseRate] = useState(30);
+  const [caller, setCaller] = useState('chi');
+  const [time, setTime] = useState('office');
+  const [pickup, setPickup] = useState('busy');
+  const { steps, result } = routeCall(caller, time, pickup);
 
-  const missedCalls = calls * (missed / 100);
-  const atRisk = missedCalls * (closeRate / 100) * value;
-  const callWorth = (closeRate / 100) * value;
-
-  const field = (label, val, set, opts) => (
-    <label className="calc-field">
-      <span className="calc-label">{label}<b>{opts.fmt(val)}</b></span>
-      <input type="range" min={opts.min} max={opts.max} step={opts.step} value={val} onChange={e => set(Number(e.target.value))}
-        style={{ '--fill': `${((val - opts.min) / (opts.max - opts.min)) * 100}%` }} />
-    </label>
+  const choice = (label, value, set, options) => (
+    <div className="tc-choice">
+      <span className="tc-label">{label}</span>
+      <div className="tc-seg" role="radiogroup" aria-label={label}>
+        {Object.entries(options).map(([k, o]) => (
+          <button key={k} type="button" role="radio" aria-checked={value === k} onClick={() => set(k)}>{o.label}</button>
+        ))}
+      </div>
+    </div>
   );
-  const lostSales = missedCalls * closeRate / 100;
 
   return (
-    <section className="band calc-band" id="calculator">
+    <section className="band" id="test-call">
       <div className="wrap">
         <div className="section-head">
-          <span className="section-title">Missed-call estimate</span>
-          <h2>Price Out Your Unanswered Calls.</h2>
-          <p className="lede">A call nobody answers rarely calls back. Move the sliders to put a monthly figure on those lost calls, and see what each answered call is worth to your business.</p>
+          <span className="section-title">Test call</span>
+          <h2>Try a Call Before It’s Real.</h2>
+          <p className="lede">The MicroAV panel lets you dry-run any call through your rules. Have a go with this sample plan: pick who’s calling, when, and whether the first desk picks up.</p>
         </div>
-        <div className="calc">
-          <div className="calc-inputs card">
-            <span className="stat-label">Your numbers</span>
-            {field('Calls per month', calls, setCalls, { min: 20, max: 5000, step: 20, fmt: v => v.toLocaleString() })}
-            {field('Calls nobody answers', missed, setMissed, { min: 0, max: 60, step: 5, fmt: v => `${v}%` })}
-            {field('Average sale per customer', value, setValue, { min: 50, max: 10000, step: 50, fmt: usd })}
-            {field('Answered calls that buy', closeRate, setCloseRate, { min: 5, max: 80, step: 5, fmt: v => `${v}%` })}
+        <div className="tc">
+          <div className="tc-inputs card">
+            <span className="stat-label">The call</span>
+            {choice('Who’s calling', caller, setCaller, CALLERS)}
+            {choice('When', time, setTime, TIMES)}
+            {choice('First desk', pickup, setPickup, PICKUP)}
+            <p className="muted small tc-plan">
+              Sample plan: 212 callers → New York desk · weekdays 9–6 → Sales desk · everything else → answering service.
+              Busy or unanswered desks roll to Sales overflow.
+            </p>
           </div>
-          <div className="calc-out card">
-            <div className="calc-compare">
-              <div><span className="stat-label">Lost each month</span><div className="stat-value accent">{usd(atRisk)}</div></div>
-              <div><span className="stat-label">One answered call is worth</span><div className="stat-value">{usd(callWorth)}</div></div>
+          <div className="tc-out card">
+            <span className="stat-label">What MicroAV does</span>
+            <ol className="tc-steps" key={`${caller}${time}${pickup}`}>
+              {steps.map((s, i) => (
+                <li key={i} className={`k-${s.kind}`} style={{ '--d': `${i * 0.08}s` }}>
+                  <span className="tc-icon" aria-hidden="true">{STEP_ICON[s.kind]}</span>
+                  <span><strong>{s.title}</strong><small>{s.detail}</small></span>
+                </li>
+              ))}
+            </ol>
+            <div className="tc-result">
+              <span className={`badge ${RESULT_BADGE[result.status]}`}>{result.status}</span>
+              <strong>{result.to}</strong>
             </div>
-            <div className="calc-rows">
-              <div><span>Unanswered calls</span><strong>{Math.round(missedCalls)}</strong></div>
-              <div><span>Sales that went elsewhere</span><strong>{lostSales < 10 ? lostSales.toFixed(1) : Math.round(lostSales)}</strong></div>
-              <div><span>Answered calls a month</span><strong>{Math.round(calls - missedCalls)}</strong></div>
-              <div><span>Lost over a year</span><strong>{usd(atRisk * 12)}</strong></div>
-            </div>
-            <p className="muted small">Want to weigh this against what MicroAV would cost you? Your per-call rate is set in a short chat with the team.</p>
-            <button type="button" className="btn btn-primary btn-block" onClick={() => openAccess(`My per-call price (${calls} calls/mo, ${missed}% unanswered)`, 'chat')}>Chat for Your Price →</button>
+            <button type="button" className="btn btn-primary btn-block" onClick={() => openAccess('Help mapping my routing', 'chat')}>Map Out My Own Routing →</button>
           </div>
         </div>
       </div>
