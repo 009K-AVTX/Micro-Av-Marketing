@@ -123,13 +123,16 @@ export const FAQS = [
   ['Can I connect my own software?', 'Yes. Create an API key under Settings to read call logs and reports from your own tools.'],
 ];
 
+// Red ticker under the hero: what the panel does, one feature per item.
 export const TICKER = [
-  ['Connected', 'Sales desk · 4m 12s'],
-  ['Rolled over', 'No answer → Sales overflow'],
-  ['Blocked', 'Robocaller · +1 (202) 555-0147'],
-  ['Menu', 'Key 2 → Support PBX'],
-  ['Night line', 'After 18:00 → Answering service'],
-  ['Rotation', 'Miami office · rep 3 of 4'],
+  ['Routing plans', 'By time, area code or key press'],
+  ['IVR menus', 'Keys 1–9 to any team'],
+  ['Backup lines', 'Unanswered calls roll to the next phone'],
+  ['Round robin', 'Calls shared evenly across reps'],
+  ['Block list', 'Spam and robocalls stopped at the door'],
+  ['Daily caps', 'Per campaign, path and destination'],
+  ['Live monitor', 'Every call as it rings'],
+  ['Test calls', 'Check the route before you publish'],
 ];
 
 export const FOOTER = [
