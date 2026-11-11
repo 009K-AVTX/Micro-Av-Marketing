@@ -78,7 +78,7 @@ h3 { font-size: 18px; font-weight: 500; }
 .points li::before { content: ""; position: absolute; left: 0; top: 27px; width: 8px; height: 8px; background: var(--accent); }
 .points p { margin: 6px 0 0; color: var(--muted); font-size: 14.5px; max-width: 52ch; }
 .question-side { position: sticky; top: 100px; }
-.question-visual { overflow: hidden; padding: 28px; min-height: 280px; background: linear-gradient(135deg, var(--surface-2), var(--inset)); }
+.question-visual { overflow: hidden; padding: 28px; min-height: 280px; background: var(--surface); }
 .question-word {
   position: absolute; right: -8px; bottom: -36px; font: 800 150px/1 var(--head); letter-spacing: -.05em;
   color: transparent; -webkit-text-stroke: 1px rgba(240, 240, 242, .06); pointer-events: none;
@@ -160,7 +160,8 @@ h3 { font-size: 18px; font-weight: 500; }
 
 /* ---------- Closing & footer ---------- */
 .closing { padding-bottom: 112px; }
-.cta { margin: 0; }
+/* Flat fill: the app's near-black diagonal gradient bands into flickering stripes on large panels. */
+.cta { margin: 0; background: var(--surface); }
 .cta .hero-inner { padding: 64px 56px; position: relative; z-index: 1; }
 .cta h2 { font-size: clamp(38px, 5.4vw, 72px); }
 .site-footer { border-top: 1px solid var(--border); padding-top: 72px; }
