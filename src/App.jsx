@@ -307,7 +307,6 @@ function Calculator() {
   const missedCalls = calls * (missed / 100);
   const atRisk = missedCalls * (closeRate / 100) * value;
   const callWorth = (closeRate / 100) * value;
-  const returnPerDollar = callWorth / RATES.perCall;
 
   const field = (label, val, set, opts) => (
     <label className="calc-field">
@@ -324,7 +323,7 @@ function Calculator() {
         <div className="section-head">
           <span className="section-title">Missed-call estimate</span>
           <h2>Price Out Your Unanswered Calls.</h2>
-          <p className="lede">A call nobody answers rarely calls back. Move the sliders to put a monthly figure on those lost calls, and see what one answered call is worth next to MicroAV’s average price per call.</p>
+          <p className="lede">A call nobody answers rarely calls back. Move the sliders to put a monthly figure on those lost calls, and see what each answered call is worth to your business.</p>
         </div>
         <div className="calc">
           <div className="calc-inputs card">
@@ -342,10 +341,10 @@ function Calculator() {
             <div className="calc-rows">
               <div><span>Unanswered calls</span><strong>{Math.round(missedCalls)}</strong></div>
               <div><span>Sales that went elsewhere</span><strong>{lostSales < 10 ? lostSales.toFixed(1) : Math.round(lostSales)}</strong></div>
-              <div><span>MicroAV average per call</span><strong>{usd(RATES.perCall)}</strong></div>
-              <div><span>Back for every $1 spent</span><strong>${returnPerDollar.toFixed(2)}</strong></div>
+              <div><span>Answered calls a month</span><strong>{Math.round(calls - missedCalls)}</strong></div>
+              <div><span>Lost over a year</span><strong>{usd(atRisk * 12)}</strong></div>
             </div>
-            <p className="muted small">Worked out at the {usd(RATES.perCall)} average per connected call. Your own rate is set in a short chat with the MicroAV team.</p>
+            <p className="muted small">Want to weigh this against what MicroAV would cost you? Your per-call rate is set in a short chat with the team.</p>
             <button type="button" className="btn btn-primary btn-block" onClick={() => openAccess(`My per-call price (${calls} calls/mo, ${missed}% unanswered)`, 'chat')}>Chat for Your Price →</button>
           </div>
         </div>
@@ -433,15 +432,15 @@ function Pricing() {
   const openAccess = useAccess();
   const cards = [
     {
-      name: 'Included', price: '$0', unit: '/mo', pitch: 'Numbers and the full panel come with every account.',
+      name: 'Included', pitch: 'Numbers and the full panel come with every account.',
       list: ['Local and toll-free numbers', 'Routing plans, IVR menus & backup order', 'Live monitor, reports, CSV', 'API key'],
     },
     {
-      name: 'Per Connected Call', price: usd(RATES.perCall), unit: ' avg / call', pitch: 'One price per call — no minutes to count.', featured: true,
+      name: 'Per Connected Call', pitch: 'One price per call — no minutes to count.', featured: true,
       list: ['Charged only when a call connects', 'Blocked callers are never billed', `Prepaid, top up from $${RATES.minTopUp}`, 'Your own low-balance warning'],
     },
     {
-      name: 'Your Rate', price: 'Fixed', unit: ' up front', pitch: 'Your exact per-call price is agreed before you go live.',
+      name: 'Your Rate', pitch: 'Your per-call price is agreed with you in a chat, before you go live.',
       list: ['Industry and call type', 'Monthly call volume', 'Number type and country', 'How many paths and menus you run'],
     },
   ];
@@ -451,17 +450,16 @@ function Pricing() {
         <div className="pricing-head">
           <div>
             <span className="section-title">Pricing</span>
-            <h2>One Price per Call, Averaging $35.</h2>
+            <h2>Priced per Call, Set for Your Business.</h2>
           </div>
           <p className="muted pricing-note">No per-minute meter, no per-user fees and no plan levels.</p>
         </div>
         <div className="plans">
           {cards.map(c => (
             <article key={c.name} className={`plan${c.featured ? ' hot' : ''}`}>
-              {c.featured && <span className="badge plan-flag">Most accounts</span>}
+              {c.featured && <span className="badge plan-flag">How you pay</span>}
               <h3>{c.name}</h3>
               <p className="muted">{c.pitch}</p>
-              <div className="price">{c.price}<small>{c.unit}</small></div>
               <button type="button" className={`btn btn-block${c.featured ? ' btn-primary' : ''}`} onClick={() => openAccess('My per-call price', 'chat')}>Chat for Your Price</button>
               <ul>{c.list.map(f => <li key={f}>{f}</li>)}</ul>
             </article>
@@ -509,7 +507,7 @@ function Closing() {
           <div>
             <span className="hero-eyebrow">Ready when you are</span>
             <h2>Never Let a<br />Call Ring Out<span className="accent">.</span></h2>
-            <p>Priced per connected call, averaging {usd(RATES.perCall)}, with numbers included. We’ll help you build your first routing plan.</p>
+            <p>Priced per connected call at a rate we agree with you, numbers included. We’ll help you build your first routing plan.</p>
           </div>
           <div className="hero-actions">
             <button type="button" className="btn btn-primary btn-lg" onClick={() => openAccess('', 'chat')}>Chat with us →</button>

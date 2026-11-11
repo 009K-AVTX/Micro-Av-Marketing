@@ -9,9 +9,8 @@ export const NAV = [
   ['Help', '#faq'],
 ];
 
-// Pricing shown on the page.
+// No per-call price is shown on the site: each account's rate is agreed in a chat.
 export const RATES = {
-  perCall: 35, // average price per connected call; each account's exact rate is quoted
   minTopUp: 5,
 };
 
@@ -118,7 +117,7 @@ export const FAQS = [
   ['What if the first phone doesn’t answer?', 'After the ring timeout you set, the call moves to the next destination in the list. The last step can be voicemail or a night service, so a call is never left ringing out.'],
   ['Can calls go to different places depending on the caller?', 'Yes. A path can match the beginning of the caller’s number — an area code or a country code — and send them to the nearest branch or team.'],
   ['What does “SIP destination” mean?', 'It’s an address for an internet phone system. If your office runs VoIP or a cloud PBX, MicroAV can hand calls to it directly with a SIP address in place of a phone number.'],
-  ['How am I charged?', `Add funds to a prepaid balance (minimum $${RATES.minTopUp}). Each connected call is charged at your agreed per-call rate, which averages $${RATES.perCall} across accounts. Numbers and the panel are included, and there’s no contract.`],
+  ['How am I charged?', `Add funds to a prepaid balance (minimum $${RATES.minTopUp}). Each connected call is charged at a per-call rate agreed with you — chat with us to get yours. Numbers and the panel are included, and there’s no contract.`],
   ['Do I have to change my current number?', 'No. Forward your existing line to a MicroAV number and keep using it. To transfer the number itself, ask us about porting.'],
   ['Can I connect my own software?', 'Yes. Create an API key under Settings to read call logs and reports from your own tools.'],
 ];
