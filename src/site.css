@@ -182,6 +182,7 @@ h3 { font-size: 18px; font-weight: 500; }
 
 /* ---------- Calculator ---------- */
 .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+.calc > .card + .card { margin-top: 0; }
 .calc-inputs, .calc-out { background: var(--bg); padding: 32px; display: flex; flex-direction: column; }
 .calc-inputs { justify-content: space-between; gap: 28px; }
 .calc-inputs > .stat-label { padding-bottom: 22px; border-bottom: 1px solid var(--border); }
