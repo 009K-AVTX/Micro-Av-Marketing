@@ -91,7 +91,7 @@ function Hero() {
           </div>
           <a className="text-link" href="#journey">Follow one call through MicroAV ↓</a>
           <ul className="assurances">
-            <li>Avg {usd(RATES.perCall)} per call</li><li>Prepaid, no lock-in</li><li>Phones and SIP lines</li>
+            <li>Local &amp; toll-free numbers</li><li>Prepaid, no lock-in</li><li>Phones and SIP lines</li>
           </ul>
         </div>
         <LivePreview />
