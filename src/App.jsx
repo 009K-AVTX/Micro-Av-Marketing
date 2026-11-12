@@ -456,7 +456,7 @@ function Pricing() {
     },
     {
       name: 'Per Connected Call', pitch: 'One price per call — no minutes to count.', featured: true,
-      list: ['Charged only when a call connects', 'Blocked callers are never billed', `Prepaid, top up from $${RATES.minTopUp}`, 'Your own low-balance warning'],
+      list: ['Charged only when a call connects', 'Blocked callers are never billed', 'Every charge listed in your call log', 'Your own low-balance warning'],
     },
     {
       name: 'Your Rate', pitch: 'Your per-call price is agreed with you in a chat, before you go live.',
