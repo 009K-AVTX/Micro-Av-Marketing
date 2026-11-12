@@ -181,7 +181,8 @@ function CallFlow() {
 /* ---------------- Ticker & journey ---------------- */
 
 function Ticker() {
-  const items = [...TICKER, ...TICKER];
+  // Four copies so the band never runs out on very wide or zoomed-out screens.
+  const items = [...TICKER, ...TICKER, ...TICKER, ...TICKER];
   return (
     <div className="ticker" aria-hidden="true">
       <div className="ticker-track">
